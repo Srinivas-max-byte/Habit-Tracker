@@ -11,6 +11,6 @@ router.get('/delete-habit/',homeController.deleteHabit);
 // Favourite habit route
 router.get('/favourite-habit/',homeController.favouriteHabit);
 // use details routes
-router.use('/details',require('./details'));
+router.post('/toggle-status',homeController.toggleStatus);
 
 module.exports=router;

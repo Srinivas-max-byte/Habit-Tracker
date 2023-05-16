@@ -82,49 +82,61 @@ module.exports.toggleStatus = async function (req, res) {
     const todaysDate = new Date();
     const todaysDay = todaysDate.getDay();
     let status = habit.days[todaysDay];
-
+    
     if (status == "none") {
-      habit.days.set(todayDay, "yes");
-      habit.completedCount++;
+      habit.days.set(todaysDay, "yes");
+      habit.completedCount = habit.completedCount+1;
+      
       const presentDate = LocalDate.now();
-
+      
       if(habit.LastDoneDate == "0"){
+        console.log("here");
         habit.currentStreak = 1;
         habit.longestStreak = 1;
       }
       else{
         const endDate = LocalDate.parse(habit.LastDoneDate);
         const noOfDays = JSJoda.ChronoUnit.DAYS.between(presentDate, endDate);
+        
         if (noOfDays === 1) {
           habit.currentStreak = habit.currentStreak + 1;
           if (habit.currentStreak > habit.longestStreak) {
             habit.longestStreak = habit.currentStreak;
           }
         } else {
+          
           habit.currentStreak = 1;
         }
       }
       habit.LastDoneDate = presentDate.toString();
       habit.completedDates.push(presentDate.toString());
     } else if (status == "yes") {
-      habit.days.todayDay = "no";
+      habit.days.set(todaysDay, "no");
       habit.completedCount--;
       habit.completedDates.pop();
       let arr = habit.completedDates;
-      const LastDoneDate = habit.completedDates[arr.length - 1];
+      let LastDoneDate;
+      if(arr.length == 0){
+        LastDoneDate = "0";
+      }
+      else{
+        LastDoneDate = habit.completedDates[arr.length - 1];
+      }
       habit.LastDoneDate = LastDoneDate;
+      habit.currentStreak = habit.currentStreak-1;
+      if(habit.currentStreak > habit.longestStreak)
+        habit.longestStreak = habit.currentStreak;
     } else {
-      habit.days.todayDay = "none";
+      habit.days.set(todaysDay, "none");
     }
     let arr = habit.completedDates;
-    const highestStreak = longestStreakCalculator(
-      arr,
-      arr.length
-    );
+    
+    const highestStreak = longestStreakCalculator(arr, arr.length);
+    
     habit.longestStreak = highestStreak;
     // Saving the changes made above to habit.
     await habit.save();
-    return;
+    return res.send(habit);
   } catch (error) {
     console.log("Error");
     return;
@@ -134,18 +146,22 @@ module.exports.toggleStatus = async function (req, res) {
 // Function for calculating the highest number of streak
 function longestStreakCalculator(arr, n) {
   arr.sort();
-  let longestCount = 0;
-  let currentCount = 0;
-  for (let i = 0; i < n; i++) {
+  let longestStreak = 1;
+  let currentStreak = 1;
+  console.log(arr)
+  for (let i = 0; i < n-1; i++) 
+  {
+    
     let first = LocalDate.parse(arr[i]);
     let second = LocalDate.parse(arr[i+1]);
+    
     if (JSJoda.ChronoUnit.DAYS.between(first, second) === 1) {
-      currentCount++;
-      if (currentCount > longestCount) {
-        longestCount = currentCount;
+      currentStreak++;
+      if (currentStreak > longestStreak) {
+        longestStreak = currentStreak;
       }
     } else {
-      currentCount = 0;
+      currentStreak = 0;
     }
   }
   return longestStreak;
