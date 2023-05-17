@@ -1,0 +1,68 @@
+<script
+  src="https://kit.fontawesome.com/6866a8ccc0.js"
+  crossorigin="anonymous"
+></script>
+
+<!-- These will tell the user that , which symbol indicate what -->
+
+<div id="symbol">
+<h4>Legend for tasks</h4>
+  <i class="fas fa-check-circle"></i>
+  -Done&emsp;&emsp;
+  <i class="fas fa-times-circle"></i>
+  -Not Done&emsp;&emsp;
+  <i class="fas fa-minus-circle"></i>
+  -Unmarked&emsp;&emsp;<br><br>
+</div>
+
+<!-- Toggle between two types of views Weekly and Detailed -->
+<div id="view-toggler" style="text-align: center;">
+    <button type="button" onclick="document.getElementById('weekly-status-list').style.display = 'none'
+    document.getElementById('habit-container-list').style.display = 'block'">
+        Habit Details</button>
+    <button type="button" onclick="document.getElementById('habit-container-list').style.display = 'none'
+    document.getElementById('weekly-status-list').style.display = 'block'">
+        Weekly Status</button>
+</div>
+
+
+<!-- From here habit and its contains start, it basically fetches data form habit, which is passed in the home_controller. -->
+<div id="habit-container">
+    <ul id="habit-container-list">
+        <% for(let habit of habitsList) {%>
+            <li class="habit-container-list-item">
+                <div class="habit-container-item">
+                    <%let currentDate = new Date(); let day = currentDate.getDay(); 
+                    let status = habit.days[day]%>
+                    <div style="display: flex; justify-content: space-between;">
+                        <i class="fa-solid fa-list-check">  Habit : <%=habit.description%></i>
+                        <i class="fa-regular fa-clock">  <%=habit.time%></i>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <% if(status=='yes'){ %>
+                            <i class="fas fa-check-circle"> Done </i>
+                            <% } else if(status=='no'){ %>
+                            <i class="fas fa-times-circle"> Not Done </i>
+                            <% } else { %>
+                            <i class="fas fa-minus-circle"> Action not taken </i>
+                        <% } %>
+                        <p>
+                            <% if(habit.isFav == true){ %>
+                                <i class="fa-solid fa-star"></i>
+                            <% } else { %>
+                                <i class="fa-regular fa-star"></i>
+                            <% } %>
+                        </p>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <p>Daily Completed Habit Count:  <%=habit.completedCount%></p>
+                        <p>Longest Streak: <%=habit.longestStreak%></p>
+                    </div>
+                </div>
+            </li>
+        <%}%>
+    </ul>
+
+    <ul id="weekly-status-list">
+    </ul>
+</div>

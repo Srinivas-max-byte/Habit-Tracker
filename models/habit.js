@@ -5,6 +5,10 @@ const habitSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  creationDate: {
+    type: String,
+    required: true,
+  },
   time: {
     type: String,
     required: true,
@@ -14,10 +18,6 @@ const habitSchema = new mongoose.Schema({
     default: "0",
   },
   completedCount: {
-    type: Number,
-    default: 0,
-  },
-  currentStreak: {
     type: Number,
     default: 0,
   },
