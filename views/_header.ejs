@@ -1,13 +1,13 @@
-<h1 style="text-align: center; color: rgb(178, 17, 78);"> Habit Tracker</h1>
+<h1 style="text-align: center; color: rgb(178, 17, 78); "> Habit Tracker</h1>
 
 
 <button class="open-button" onclick="openForm()">Add New Habit</button>
 
 <div class="form-popup" id="myForm">
-  <form action="/create-habit" method="POST" class="form-container">
+  <form action="/create-habit" method="POST" class="form-container" id="new-habit-form">
     <h1>Add New Habit</h1>
 
-    <label for="habit"><b>Habit Description</b></label>
+    <label for="description"><b>Habit Description</b></label>
     <input type="text" placeholder="Enter Habit" name="description" required>
 
     <label for="time"><b>Enter Schedule time</b></label>

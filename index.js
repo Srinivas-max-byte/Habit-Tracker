@@ -1,9 +1,9 @@
 // requiring express and creating port
 const express = require('express');
+const mongoose = require('mongoose');
 var bodyParser = require('body-parser')
 const app = express();
-const port= 3000;
-const db = require('./config/mongoose');
+const port= process.env.PORT || 8000;
 const path=require('path')
 const expressLayout = require('express-ejs-layouts');
 // set view engine
@@ -15,10 +15,8 @@ app.set('views',path.join(__dirname,'views'));
 app.set('layout extractStyles',true);
 app.set('layout extractScripts',true);
 //Use router
-
 app.use(express.static('./assets'));
 app.use(expressLayout);
-// require mongoose
 
 // Body Parser middleware.
 app.use(express.json());
@@ -29,6 +27,17 @@ app.post('/someRoute', (req, res) => {
     console.log(req.body);
     res.send({ status: 'SUCCESS' });
 });
+
+//------------ DB Configuration ------------//
+const db = require('./config/key').MongoURI;
+
+//------------ Mongo Connection ------------//
+mongoose.connect(db, { useNewUrlParser: true, 
+    useUnifiedTopology: true, 
+    retryWrites: true,
+    w: "majority",})
+.then(() => console.log("Successfully connected to MongoDB"))
+.catch(err => console.log(err));
 
 app.use(function (req, res) {
     res.setHeader('Content-Type', 'text/plain')

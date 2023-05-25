@@ -5,15 +5,15 @@ const LocalDate = JSJoda.LocalDate;
 // Display all Habits when page loads.
 module.exports.home = async function (req, res) {
   try {
+    console.log("Opened Again")
     const date = new Date();
-    let day = date.getDay();
+    // let day = date.getDay();
     let allHabits = await Habit.find({});
 
-    for (let habit of allHabits) {
-      habit.days.set(day, "none");
-      await habit.save();
-      console.log(habit);
-    }
+    // for (let habit of allHabits) {
+    //   habit.days.set(day, "none");
+    //   await habit.save();
+    // }
 
     allHabits = await Habit.find({});
     return res.render("home", {
@@ -28,10 +28,12 @@ module.exports.home = async function (req, res) {
 // Controller to create a habit.
 module.exports.createHabit = async function (req, res) {
   try {
+    // Declaring initial status of 1 week for each habit.
     let days = ["none", "none", "none", "none", "none", "none", "none"];
+
+    // All completed dates collection.
     let completedDates = [];
-    console.log(req.body.description);
-    console.log(req.body.time);
+    // Creating new habit.
     const newHabit = new Habit({
       description: req.body.description,
       time: req.body.time,
@@ -39,21 +41,40 @@ module.exports.createHabit = async function (req, res) {
       completedDates: completedDates,
       days: days,
     });
-    console.log(newHabit);
-    await newHabit.save();
-    res.send(newHabit);
+    const habit = await newHabit.save();
+    if (req.xhr) {
+      console.log("Inside XHR check")
+      return res.status(200).json({
+        data: {
+          habit: habit,
+        },
+        message: "Habit created!",
+      });
+    }
+
+    return res.redirect("back");
   } catch (error) {
     console.log("Error in creating habit");
+    return res.redirect("back");
   }
 };
 
 // Controller to delete a habit.
 module.exports.deleteHabit = async function (req, res) {
   try {
-    let id = req.query.id;
+    let id = req.params.id;
     const delResponse = await Habit.findByIdAndDelete(id);
-    return res.send("Deleted");
-    // return res.redirect("back");
+
+    if (req.xhr) {
+      return res.status(200).json({
+        data: {
+          habit_id: req.params.id,
+        },
+        message: "Habit deleted",
+      });
+    }
+
+    return res.redirect("back");
   } catch (error) {
     console.log("Error in deleting Habit");
   }
@@ -62,12 +83,11 @@ module.exports.deleteHabit = async function (req, res) {
 // Controller to favourite a habit.
 module.exports.favouriteHabit = async function (req, res) {
   try {
-    let id = req.query.id;
+    let id = req.params.id;
     let favHabit = await Habit.findById(id);
     favHabit.isFav = !favHabit.isFav;
     await favHabit.save();
-    return res.send("Fav Toggled");
-    // return res.redirect("back");
+    return res.redirect("back");
   } catch (error) {
     console.log("Error");
   }
@@ -76,24 +96,30 @@ module.exports.favouriteHabit = async function (req, res) {
 // Controller for toggling status.
 module.exports.toggleStatus = async function (req, res) {
   try {
-    let id = req.query.id;
+    let id = req.params.id;
+    const todaysDay = req.params.day;
+
+    let today = req.params.date;
+    today = today.replaceAll('-','/');
+    // Ignore this is not used
+    // const search = '-';
+    // const replaceWith = '/';
+    // const result = today.split(search).join(replaceWith);  
+    // let dateInString = todaysDate.getFullYear().toString()+"-"+todaysDate.getMonth().toString()+"-"+todaysDate.getDate().toString();
     const habit = await Habit.findById(id);
-    const todaysDate = new Date();
-    const todaysDay = todaysDate.getDay();
+
     let status = habit.days[todaysDay];
 
     if (status == "none") {
       habit.days.set(todaysDay, "yes");
       habit.completedCount = habit.completedCount + 1;
-
-      const presentDate = LocalDate.now();
-
-      habit.LastDoneDate = presentDate.toString();
-      habit.completedDates.push(presentDate.toString());
+      // const presentDate = LocalDate.now();
+      // habit.LastDoneDate = presentDate.toString();
+      habit.completedDates.push(today);
     } else if (status == "yes") {
       habit.days.set(todaysDay, "no");
       habit.completedCount--;
-      habit.completedDates.pop();
+      // habit.completedDates.pull(today);
       await habit.save();
       let arr = habit.completedDates;
       let LastDoneDate;
@@ -103,18 +129,18 @@ module.exports.toggleStatus = async function (req, res) {
         LastDoneDate = habit.completedDates[arr.length - 1];
       }
       habit.LastDoneDate = LastDoneDate;
-      habit.longestStreak = longestStreakCalculator(arr, arr.length);
+      // habit.longestStreak = longestStreakCalculator(arr, arr.length);
     } else {
       habit.days.set(todaysDay, "none");
     }
+    
     let arr = habit.completedDates;
-
     const highestStreak = longestStreakCalculator(arr, arr.length);
-
     habit.longestStreak = highestStreak;
     // Saving the changes made above to habit.
-    await habit.save();
-    return res.send(habit);
+    const updatedHabit = await habit.save();
+    // return res.send(updatedHabit);
+    return res.redirect("back");
   } catch (error) {
     console.log("Error");
     return;
@@ -123,26 +149,54 @@ module.exports.toggleStatus = async function (req, res) {
 
 // Function for calculating the highest number of streak
 function longestStreakCalculator(arr, n) {
-  if(n === 1 || n === 0){
+  if(n == 1 || n == 0){
     return n;
   }
 
   arr.sort();
   let longestStreak = 1;
   let currentStreak = 1;
-  console.log(arr);
   for (let i = 0; i < n - 1; i++) {
-    let first = LocalDate.parse(arr[i]);
-    let second = LocalDate.parse(arr[i + 1]);
 
-    if (JSJoda.ChronoUnit.DAYS.between(first, second) === 1) {
+    if (getNumberOfDays(arr[i], arr[i+1]) === 1) {
       currentStreak++;
       if (currentStreak > longestStreak) {
         longestStreak = currentStreak;
       }
     } else {
-      currentStreak = 0;
+      currentStreak = 1;
     }
   }
   return longestStreak;
+}
+
+// Function to calculate number of days between two dates.
+function getNumberOfDays(start, end) {
+  start = start.split('/');
+  end = end.split('/');
+
+  let temp = start[0];
+  start[0] = start[1];
+  start[1] = temp;
+
+  temp = end[0];
+  end[0] = end[1];
+  end[1] = temp;
+
+  start.join('/');
+  end.join('/');
+
+  const date1 = new Date(start);
+  const date2 = new Date(end);
+
+  // One day in milliseconds
+  const oneDay = 1000 * 60 * 60 * 24;
+
+  // Calculating the time difference between two dates
+  const diffInTime = date2.getTime() - date1.getTime();
+
+  // Calculating the no. of days between two dates
+  const diffInDays = Math.round(diffInTime / oneDay);
+
+  return diffInDays;
 }
