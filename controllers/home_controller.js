@@ -102,7 +102,7 @@ module.exports.toggleStatus = async function (req, res) {
     console.log("1");
     let today = req.params.date;
     console.log("1");
-    today = today.replaceAll('-','/');
+    today = today.replace(/-./g, '/');
     console.log("1");
     // Ignore this is not used
     // const search = '-';
