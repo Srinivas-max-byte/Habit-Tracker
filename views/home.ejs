@@ -41,7 +41,7 @@
     <% for(let habit of habitsList) {%>
     <li class="habit-container-list-item" id="details-<%= habit._id%>">
       <div class="habit-container-item">
-        <%let currentDate = new Date(); let day = currentDate.getDay(); let
+        <%let currentDate = new Date(); console.log(currentDate); let day = currentDate.getDay(); let
         status = habit.days[day]; let month = currentDate.getMonth()+1;
         let dateStringFormat = currentDate.getDate()+"-"+month+"-"+currentDate.getFullYear(); %>
         <div style="display: flex; justify-content: space-between">
