@@ -97,10 +97,13 @@ module.exports.favouriteHabit = async function (req, res) {
 module.exports.toggleStatus = async function (req, res) {
   try {
     let id = req.params.id;
+    console.log("1");
     const todaysDay = req.params.day;
-
+    console.log("1");
     let today = req.params.date;
+    console.log("1");
     today = today.replaceAll('-','/');
+    console.log("1");
     // Ignore this is not used
     // const search = '-';
     // const replaceWith = '/';
