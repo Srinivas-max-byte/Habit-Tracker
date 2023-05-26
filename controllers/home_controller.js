@@ -5,15 +5,9 @@ const LocalDate = JSJoda.LocalDate;
 // Display all Habits when page loads.
 module.exports.home = async function (req, res) {
   try {
-    console.log("Opened Again")
     const date = new Date();
-    // let day = date.getDay();
+    
     let allHabits = await Habit.find({});
-
-    // for (let habit of allHabits) {
-    //   habit.days.set(day, "none");
-    //   await habit.save();
-    // }
 
     allHabits = await Habit.find({});
     return res.render("home", {
@@ -97,63 +91,36 @@ module.exports.favouriteHabit = async function (req, res) {
 module.exports.toggleStatus = async function (req, res) {
   try {
     let id = req.params.id;
-    console.log("1");
     const todaysDay = req.params.day;
-    console.log("1");
     let today = req.params.date;
-    console.log("1");
     today = today.split("-");
     today = today.join("/");
-    console.log("1");
-    // Ignore this is not used
-    // const search = '-';
-    // const replaceWith = '/';
-    // const result = today.split(search).join(replaceWith);  
-    // let dateInString = todaysDate.getFullYear().toString()+"-"+todaysDate.getMonth().toString()+"-"+todaysDate.getDate().toString();
+    
     const habit = await Habit.findById(id);
-    console.log("1");
     let status = habit.days[todaysDay];
-    console.log("2");
     if (status == "none") {
       habit.days.set(todaysDay, "yes");
       habit.completedCount = habit.completedCount + 1;
       // const presentDate = LocalDate.now();
       // habit.LastDoneDate = presentDate.toString();
       habit.completedDates.push(today);
-      console.log("3");
     } else if (status == "yes") {
       habit.days.set(todaysDay, "no");
       habit.completedCount--;
-      // habit.completedDates.pull(today);
+      habit.completedDates.pull(today);
       await habit.save();
-      let arr = habit.completedDates;
-      let LastDoneDate;
-      if (arr.length == 0) {
-        LastDoneDate = "0";
-      } else {
-        LastDoneDate = habit.completedDates[arr.length - 1];
-      }
-      habit.LastDoneDate = LastDoneDate;
-      console.log("3");
-      // habit.longestStreak = longestStreakCalculator(arr, arr.length);
     } else {
       habit.days.set(todaysDay, "none");
       console.log("3");
     }
-    console.log("4");
     let arr = habit.completedDates;
-    console.log("5");
     const highestStreak = longestStreakCalculator(arr, arr.length);
-    console.log("6");
     habit.longestStreak = highestStreak;
-    console.log("7");
     // Saving the changes made above to habit.
     const updatedHabit = await habit.save();
-    console.log("8");
     // return res.send(updatedHabit);
     return res.redirect("back");
   } catch (error) {
-    console.log("3");
     console.log("Error");
     return;
   }
